@@ -1,4 +1,5 @@
 html, body {
+    font-family: Arial, Liberation Sans, DejaVu Sans, sans-serif;
     margin: 0;
     padding: 0;
     width: 100%;
@@ -6,7 +7,7 @@ html, body {
 }
 
 #questions {
-    width: 735px;
+    width: 800px;
     margin: auto;
 }
 
@@ -24,4 +25,55 @@ a {
 
 a:hover {
     text-decoration: underline;
+}
+
+#questions {
+    display: table;
+}
+
+.question {
+    display: table-row;
+}
+
+.stats, .details, .posted {
+    display: table-cell;
+}
+
+.stats * {
+    text-align: center;
+}
+
+.score-value {
+    font-size: 24px;
+}
+
+.answers-value {
+    font-size: 140%;
+}
+
+.views {
+    color: #999;
+    white-space: nowrap;
+}
+
+.views * {
+    display: inline;
+}
+
+.posted-date {
+    white-space: nowrap;
+}
+
+.author {
+    white-space: nowrap;
+}
+
+.author-image {
+    width: 32px;
+    height: 32px;
+    display: inline-block;
+}
+
+.author-details {
+    display: inline-block;
 }

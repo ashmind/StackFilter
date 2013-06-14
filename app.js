@@ -1,3 +1,7 @@
+Date.fromUnixTime = function(value) {
+    return new Date(value * 1000);
+};
+
 Date.prototype.toUnixTime = function() {
     return Math.round(this.getTime() / 1000);
 };
@@ -5,6 +9,17 @@ Date.prototype.toUnixTime = function() {
 Date.prototype.addHours = function(hours) {
     this.setHours(this.getHours() + hours);
     return this;
+};
+
+ko.bindingHandlers.datetime = {
+    init: function(element, valueAccessor) {
+        $(element).attr('datetime', valueAccessor().toISOString())
+            .timeago();
+    },
+
+    update: function(element, valueAccessor) {
+        $(element).attr('datetime', valueAccessor().toISOString());
+    }
 };
 
 var model = {
@@ -38,13 +53,16 @@ var StackOverflow = {
     questions : function(query, complete) {
         var request = {
             site: 'stackoverflow',
-            key: this._key,
+            key:   this._key,
             access_token: this._accessToken,
-            min: query.min,
-            sort: query.sort
+            min:   (query.score || {}).min,
+            order: query.order,
+            sort:  query.sort
         };
         if (query.fromDate)
             request.fromdate = query.fromDate.toUnixTime();
+        if (query.tags)
+            request.tagged = query.tags.join(';');
 
         $.get(this._apiUrl + '/questions', request, complete);
     }     
@@ -54,7 +72,13 @@ var App = {
     _lastUpdate: new Date().addHours(-1),
     
     requestUpdate: function() {
-        var query = { fromDate: App._lastUpdate, sort: 'creation', min: 0 };
+        var query = {
+            fromDate: App._lastUpdate,
+            score:    { min: 0 },
+            sort:    'creation',
+            order:   'desc',
+            tags:    ['c#']
+        };
         StackOverflow.questions(query, function(result) {
             App._lastUpdate = new Date();
             App.processUpdate(result.items);
@@ -63,12 +87,25 @@ var App = {
     },
 
     processUpdate : function(questions) {
+        var spliceArgs = [0, 0];
         for (var i = 0; i < questions.length; i++) {
-            model.questions.splice(0, 0, {
-                title: questions[i].title,
-                url: questions[i].link
+            var q = questions[i];
+            spliceArgs.push({
+                title:   q.title,
+                score:   q.score,
+                answers: q.answer_count,
+                views:   q.view_count,
+                url:     q.link,
+                posted:  Date.fromUnixTime(q.creation_date),
+                author: {
+                    name:       q.owner.display_name,
+                    imageUrl:   q.owner.profile_image,
+                    reputation: q.owner.reputation
+                }
             });
         }
+
+        model.questions.splice.apply(model.questions, spliceArgs);
     },
     
     start : function() {

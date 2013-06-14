@@ -7,16 +7,45 @@
     <script type='text/javascript' src="external/underscore-min.js"></script>
     <script type='text/javascript' src="external/knockout-2.2.1.js"></script>
     <script type='text/javascript' src="external/knockout-es5.min.js"></script>
+    <script type='text/javascript' src="external/jquery.timeago.js"></script>
     <script type='text/javascript' src='https://api-v2cdn.sstatic.net/js/all.js'></script>
     <script type='text/javascript' src="app.js"></script>
   </head>
   <body>
-    <ul id="questions" data-bind="foreach: questions">
-      <li>
-        <h3>
-          <a data-bind="html: title, attr: { href: url }"></a>
-        </h3>
-      </li>
-    </ul>
+    <div id="questions" data-bind="foreach: questions">
+      <div class="question">
+        <div class="stats">
+          <div class="score">
+            <div class="score-value" data-bind="text: score"></div>
+            <div>votes</div>
+          </div>
+          <div class="answers">
+            <div class="answers-value" data-bind="text: answers"></div>
+            <div>answers</div>
+          </div>
+          <div class="views">
+            <div class="views-value" data-bind="text: views"></div>
+            <div>views</div>
+          </div>
+        </div>
+        <div class="details">
+          <h3>
+            <a data-bind="html: title, attr: { href: url }"></a>
+          </h3>
+        </div>
+        <div class="posted">
+          <div class="posted-date">
+            asked <time data-bind="datetime: posted"></time>
+          </div>
+          <div class="author" data-bind="with: author">
+            <img class="author-image" data-bind="attr: { src: imageUrl }" />
+            <div class="author-details">
+              <div data-bind="text: name"></div> 
+              <div data-bind="text: reputation"></div> 
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
