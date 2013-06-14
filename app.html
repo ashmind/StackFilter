@@ -12,45 +12,59 @@
     <script type='text/javascript' src="app.js"></script>
   </head>
   <body>
-    <div id="questions" data-bind="foreach: questions">
-      <div class="question">
-        <div class="stats-container">
-          <div class="stats">
-            <div class="score">
-              <div class="score-value" data-bind="text: score"></div>
-              <div>votes</div>
-            </div>
-            <div class="answers">
-              <div class="answers-value" data-bind="text: answers"></div>
-              <div>answers</div>
-            </div>
-            <div class="views">
-              <div class="views-value" data-bind="text: views"></div>
-              <div>views</div>
+    <div class="container">
+      <div id="filter" class="filter" data-bind="with: filter">
+        <p>
+          Show me questions tagged <input data-bind="value: tags" type="text"> with a score of at least
+          <input data-bind="value: minScore" type="number">. Author's reputation must be at least
+          <input data-bind="value: minReputation" type="number">.
+        </p>
+        
+        <p>
+          Question must have no more than <input data-bind="value: maxAnswers" type="number"> answer<span data-bind="text: maxAnswers != 1 ? 's' : ''"></span> and no approved answer.
+          <button data-bind="visible: changed, click: App.applyFilter">Change</button>
+        </p>
+      </div>
+      <div class="questions" data-bind="foreach: questions">
+        <div class="question">
+          <div class="stats-container">
+            <div class="stats">
+              <div class="score">
+                <div class="score-value" data-bind="text: score"></div>
+                <div>votes</div>
+              </div>
+              <div class="answers">
+                <div class="answers-value" data-bind="text: answers"></div>
+                <div>answers</div>
+              </div>
+              <div class="views">
+                <div class="views-value" data-bind="text: views"></div>
+                <div>views</div>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="details-container">
-          <div class="details">
-            <h3>
-              <a data-bind="html: title, attr: { href: url }"></a>
-            </h3>
-            <div class="excerpt" data-bind="html: excerpt"></div>
-            <ul class="tags" data-bind="foreach: tags">
-              <li class="tag" data-bind="text: $data"></li>
-            </ul>
-          </div>
-        </div>
-        <div class="posted-container">
-          <div class="posted">
-            <div class="posted-date">
-              asked <time data-bind="datetime: posted"></time>
+          <div class="details-container">
+            <div class="details">
+              <h3>
+                <a data-bind="html: title, attr: { href: url }"></a>
+              </h3>
+              <div class="excerpt" data-bind="html: excerpt"></div>
+              <ul class="tags" data-bind="foreach: tags">
+                <li class="tag" data-bind="text: $data"></li>
+              </ul>
             </div>
-            <div class="author" data-bind="with: author">
-              <img class="author-image" data-bind="attr: { src: imageUrl }" />
-              <div class="author-details">
-                <div data-bind="html: name"></div> 
-                <div data-bind="text: reputation"></div> 
+          </div>
+          <div class="posted-container">
+            <div class="posted">
+              <div class="posted-date">
+                asked <time data-bind="datetime: posted"></time>
+              </div>
+              <div class="author" data-bind="with: author">
+                <img class="author-image" data-bind="attr: { src: imageUrl }" />
+                <div class="author-details">
+                  <div data-bind="html: name"></div> 
+                  <div data-bind="text: reputation"></div> 
+                </div>
               </div>
             </div>
           </div>

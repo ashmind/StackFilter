@@ -22,10 +22,19 @@ ko.bindingHandlers.datetime = {
     }
 };
 
-var model = {
+var Model = {
+    filter: {
+        tags: 'c#',
+        minScore: 0,
+        minReputation: 2,
+        maxAnswers: 0,
+        
+        changed: false
+    },
     questions: []
 };
-ko.track(model);
+ko.track(Model.filter);
+ko.track(Model);
 
 var StackOverflow = {
     _key: 'pDZGs9mGjjQ*mP0RG6ojYg((',
@@ -71,21 +80,29 @@ var StackOverflow = {
 
 var App = {
     _lastUpdate: new Date().addHours(-1),
-    _questionsFilter: '!5-2CV5.zdri*hFccadRi6*fBC48*S(u.vSmnlf',
+    _soFieldFilter: '!5-2CV5.zdri*hFccadRi6*fBC48*S(u.vSmnlf',
     
-    requestUpdate: function() {
+    applyFilter : function() {
+        App._appliedFilter = Model.filter;
+        window.clearTimeout(App._timeoutID);
+        Model.filter.changed = false;
+        Model.questions.removeAll();
+        App.requestUpdate(new Date().addHours(-1));
+    },
+
+    requestUpdate: function(fromDate) {
         var query = {
-            fromDate: App._lastUpdate,
-            filter:   App._questionsFilter,
-            score:    { min: 0 },
+            fromDate: fromDate || App._lastUpdate,
+            filter:   App._soFieldFilter,
+            score:    { min: App._appliedFilter.minScore },
             sort:    'creation',
             order:   'desc',
-            tags:    ['c#']
+            tags:    App._appliedFilter.tags.split(/[,;\s]+/)
         };
         StackOverflow.questions(query, function(result) {
             App._lastUpdate = new Date();
             App.processUpdate(result.items);
-            setTimeout(App.requestUpdate, 120000);
+            App._timeoutID = setTimeout(App.requestUpdate, 120000);
         });
     },
 
@@ -94,6 +111,12 @@ var App = {
         var cleaner = $('<div>');
         for (var i = 0; i < questions.length; i++) {
             var q = questions[i];
+            if (parseInt(q.owner.reputation) < App._appliedFilter.minReputation)
+                continue;
+            
+            if (parseInt(q.answer_count) > App._appliedFilter.maxAnswers)
+                continue;
+
             var bodyText = cleaner.html(q.body).text();
 
             spliceArgs.push({
@@ -113,10 +136,20 @@ var App = {
             });
         }
 
-        model.questions.splice.apply(model.questions, spliceArgs);
+        Model.questions.splice.apply(Model.questions, spliceArgs);
     },
     
     start : function() {
+        App._appliedFilter = Model.filter;
+        Model.filter.changed = false;
+        for (var key in Model.filter) {
+            var keyFixed = key;
+            ko.getObservable(Model.filter, key).subscribe(function(newValue) {
+                if (App._appliedFilter[keyFixed] !== newValue)
+                    Model.filter.changed = true;
+            });
+        }
+
         StackOverflow.authenticate(function() {
             App.requestUpdate();
         });
@@ -124,6 +157,6 @@ var App = {
 };
 
 $(function() {
-    ko.applyBindings(model);
+    ko.applyBindings(Model);
     App.start();
 });
