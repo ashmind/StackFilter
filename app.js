@@ -52,12 +52,13 @@ var StackOverflow = {
 
     questions : function(query, complete) {
         var request = {
-            site: 'stackoverflow',
-            key:   this._key,
+            site:   'stackoverflow',
+            key:    this._key,
             access_token: this._accessToken,
-            min:   (query.score || {}).min,
-            order: query.order,
-            sort:  query.sort
+            min:    (query.score || {}).min,
+            order:  query.order,
+            sort:   query.sort,
+            filter: query.filter
         };
         if (query.fromDate)
             request.fromdate = query.fromDate.toUnixTime();
@@ -70,10 +71,12 @@ var StackOverflow = {
 
 var App = {
     _lastUpdate: new Date().addHours(-1),
+    _questionsFilter: '!5-2CV5.zdri*hFccadRi6*fBC48*S(u.vSmnlf',
     
     requestUpdate: function() {
         var query = {
             fromDate: App._lastUpdate,
+            filter:   App._questionsFilter,
             score:    { min: 0 },
             sort:    'creation',
             order:   'desc',
@@ -88,14 +91,19 @@ var App = {
 
     processUpdate : function(questions) {
         var spliceArgs = [0, 0];
+        var cleaner = $('<div>');
         for (var i = 0; i < questions.length; i++) {
             var q = questions[i];
+            var bodyText = cleaner.html(q.body).text();
+
             spliceArgs.push({
+                url:     q.link,
                 title:   q.title,
+                excerpt: bodyText.match(/^\s*(\S*(?:\s+\S+){0,39})/)[1] + '…',
+                tags:    q.tags,
                 score:   q.score,
                 answers: q.answer_count,
                 views:   q.view_count,
-                url:     q.link,
                 posted:  Date.fromUnixTime(q.creation_date),
                 author: {
                     name:       q.owner.display_name,
