@@ -137,7 +137,7 @@ var App = {
         }
         
         this.notifications.setup();
-        StackOverflow.authenticate(function() {
+        StackOverflow.authenticate(settings.StackOverflowAPI.clientId, settings.StackOverflowAPI.key, function() {
             this.requestUpdate();
         }.bind(this));
     }

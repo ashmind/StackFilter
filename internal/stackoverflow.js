@@ -1,10 +1,10 @@
 ﻿var StackOverflow = {
-    _key: 'pDZGs9mGjjQ*mP0RG6ojYg((',
     _apiUrl: 'https://api.stackexchange.com/2.1',
 
-    authenticate: function(success) {
+    authenticate: function(clientId, key, success) {
+        this._key = key;
         SE.init({
-            clientId: 1655,
+            clientId: clientId,
             key: this._key,
             channelUrl: window.location.href.replace('app.html', 'blank.html'),
             complete: function() {
