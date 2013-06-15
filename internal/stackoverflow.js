@@ -32,7 +32,8 @@
                 min:      (query.score || {}).min,
                 order:    query.order,
                 sort:     query.sort,
-                filter:   query.filter
+                filter:   query.filter,
+                pagesize: query.pageSize
             };
             if (query.fromDate)
                 request.fromdate = query.fromDate.toUnixTime();

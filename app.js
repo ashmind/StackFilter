@@ -14,6 +14,7 @@ var Model = {
         tags: 'c#',
         minScore: 0,
         minReputation: 2,
+        lowReputationMinScore: 3,
         maxAnswers: 0,
         
         changed: false
@@ -49,7 +50,8 @@ var App = {
             score:    { min: this._appliedFilter.minScore },
             filter:   this._soFieldFilter,
             sort:    'creation',
-            order:   'desc'
+            order:   'desc',
+            pageSize: 100
         };
         StackOverflow.search.advanced(query, function(result) {
             this._lastUpdate = new Date();
@@ -74,7 +76,7 @@ var App = {
         var spliceArgs = [0, 0];
         for (var i = 0; i < questionsJson.length; i++) {
             var q = questionsJson[i];
-            if (parseInt(q.owner.reputation) < this._appliedFilter.minReputation)
+            if (parseInt(q.owner.reputation) < this._appliedFilter.minReputation && parseInt(q.score) < this._appliedFilter.lowReputationMinScore)
                 continue;
             
             if (parseInt(q.answer_count) > this._appliedFilter.maxAnswers)
