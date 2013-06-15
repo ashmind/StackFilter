@@ -31,9 +31,14 @@ var Model = {
         
         changed: false
     },
+    notifications : {
+        possible: false,
+        enabled:  false
+    },
     questions: []
 };
 ko.track(Model.filter);
+ko.track(Model.notifications);
 ko.track(Model);
 
 var StackOverflow = {
@@ -48,14 +53,14 @@ var StackOverflow = {
             complete: function() {
                 SE.authenticate({
                     success : function(result) {
-                        StackOverflow._accessToken = result.accessToken;
+                        this._accessToken = result.accessToken;
                         success();
-                    },
+                    }.bind(this),
                     error: function(e) {
                         alert('Failed to authenticate: ' + e.errorName + ", " + e.errorMessage + ".");
                     }
                 });
-            }
+            }.bind(this)
         });
     },
 
@@ -79,47 +84,47 @@ var StackOverflow = {
 };
 
 var App = {
-    _lastUpdate: new Date().addHours(-1),
-    _soFieldFilter: '!5-2CV5.zdri*hFccadRi6*fBC48*S(u.vSmnlf',
+    _lastUpdate:             new Date().addHours(-1),
+    _soFieldFilter:          '!5-2CV5.zdri*hFccadRi6*fBC48*S(u.vSmnlf',
     
     applyFilter : function() {
-        App._appliedFilter = Model.filter;
-        window.clearTimeout(App._timeoutID);
+        this._appliedFilter = Model.filter;
+        window.clearTimeout(this._timeoutID);
         Model.filter.changed = false;
         Model.questions.removeAll();
-        App.requestUpdate(new Date().addHours(-1));
+        this.requestUpdate(new Date().addHours(-1));
     },
 
     requestUpdate: function(fromDate) {
         var query = {
-            fromDate: fromDate || App._lastUpdate,
-            filter:   App._soFieldFilter,
-            score:    { min: App._appliedFilter.minScore },
+            fromDate: fromDate || this._lastUpdate,
+            filter:   this._soFieldFilter,
+            score:    { min: this._appliedFilter.minScore },
             sort:    'creation',
             order:   'desc',
-            tags:    App._appliedFilter.tags.split(/[,;\s]+/)
+            tags:    this._appliedFilter.tags.split(/[,;\s]+/)
         };
         StackOverflow.questions(query, function(result) {
-            App._lastUpdate = new Date();
-            App.processUpdate(result.items);
-            App._timeoutID = setTimeout(App.requestUpdate, 120000);
-        });
+            this._lastUpdate = new Date();
+            this.processUpdate(result.items);
+            this._timeoutID = setTimeout(App.requestUpdate, 120000);
+        }.bind(this));
     },
 
-    processUpdate : function(questions) {
+    processUpdate : function(questionsJson) {
         var spliceArgs = [0, 0];
         var cleaner = $('<div>');
-        for (var i = 0; i < questions.length; i++) {
-            var q = questions[i];
-            if (parseInt(q.owner.reputation) < App._appliedFilter.minReputation)
+        for (var i = 0; i < questionsJson.length; i++) {
+            var q = questionsJson[i];
+            if (parseInt(q.owner.reputation) < this._appliedFilter.minReputation)
                 continue;
             
-            if (parseInt(q.answer_count) > App._appliedFilter.maxAnswers)
+            if (parseInt(q.answer_count) > this._appliedFilter.maxAnswers)
                 continue;
 
             var bodyText = cleaner.html(q.body).text();
 
-            spliceArgs.push({
+            var question = {
                 url:     q.link,
                 title:   q.title,
                 excerpt: bodyText.match(/^\s*(\S*(?:\s+\S+){0,39})/)[1] + '…',
@@ -133,26 +138,102 @@ var App = {
                     imageUrl:   q.owner.profile_image,
                     reputation: q.owner.reputation
                 }
-            });
+            };
+            spliceArgs.push(question);
+            
+            if (i === 0)
+                this.notifications.show(question);
         }
 
         Model.questions.splice.apply(Model.questions, spliceArgs);
     },
-    
+       
     start : function() {
-        App._appliedFilter = Model.filter;
+        this._appliedFilter = Model.filter;
         Model.filter.changed = false;
         for (var key in Model.filter) {
             var keyFixed = key;
             ko.getObservable(Model.filter, key).subscribe(function(newValue) {
-                if (App._appliedFilter[keyFixed] !== newValue)
+                if (this._appliedFilter[keyFixed] !== newValue)
                     Model.filter.changed = true;
-            });
+            }.bind(this));
+        }
+        
+        this.notifications.setup();
+        StackOverflow.authenticate(function() {
+            this.requestUpdate();
+        }.bind(this));
+    }
+};
+App.notifications = {
+    _permission: undefined,
+
+    setup : function() {
+        if (Notification === undefined) {
+            Model.notifications.possible = false;
+            return;
         }
 
-        StackOverflow.authenticate(function() {
-            App.requestUpdate();
+        this._permission = Notification.permission;
+        if (this._permission === undefined) {
+            // hi Chromium!
+            // https://code.google.com/p/chromium/issues/detail?id=163226
+            // https://code.google.com/p/v8/issues/detail?id=2281
+
+            var notification = new Notification("");
+            notification.onshow = function() { notification.close(); };
+            this._permission = notification.permission;
+        }
+        
+        if (this._permission === 'denied') {
+            Model.notifications.possible = false;
+            return;
+        }
+        
+        Model.notifications.possible = true;
+        if (this._permission === 'granted')
+            return;
+        
+        ko.getObservable(Model.notifications, 'enabled').subscribe(function(newValue) {
+            console.log('Enabled changed!');
+            if (newValue)
+                this.enable();
+        }.bind(this));
+    },
+    
+    enable: function() {
+        if (this._permission !== 'default')
+            return;
+
+        Model.notifications.enabled = false;
+        Notification.requestPermission(function(permission) {
+            this._permission = permission;
+            if (permission === 'denied') {
+                Model.notifications.possible = false;
+                return;
+            }
+
+            if (permission === 'default')
+                return;
+
+            Model.notifications.enabled = true;
+        }.bind(this));
+    },
+
+    show: function(question) {
+        var notification = new Notification(question.title, {
+            body: question.excerpt,
+            icon: question.imageUrl
         });
+        notification.onshow = function() {
+            window.setTimeout(function() {
+                notification.close();
+            }, 2 * 60 * 1000);
+        };
+        notification.onclick = function() {
+            window.open(question.url);
+            notification.close();
+        };
     }
 };
 

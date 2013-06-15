@@ -2,3 +2,5 @@
 *.suo
 
 /Web.config
+
+/.sln/*.user

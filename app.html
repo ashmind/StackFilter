@@ -25,6 +25,11 @@
           <button data-bind="visible: changed, click: App.applyFilter">Change</button>
         </p>
       </div>
+      <!-- ko with: notifications -->
+      <div data-bind="visible: possible">
+        <input type="checkbox" data-bind="checked: enabled" /> Notify me on new questions.
+      </div>
+      <!-- /ko -->
       <div class="questions" data-bind="foreach: questions">
         <div class="question">
           <div class="stats-container">
