@@ -114,7 +114,7 @@ var App = {
         StackOverflow.search.advanced(query, function(result) {
             this._lastUpdate = new Date();
             this.processUpdate(result.items);
-            this._timeoutID = setTimeout(App.requestUpdate, 120000);
+            this._timeoutID = setTimeout(App.requestUpdate.bind(App), 120000);
         }.bind(this));
     },
 
