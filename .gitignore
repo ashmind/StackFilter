@@ -1,6 +1,2 @@
-*.suo
-*.suo
-
-/Web.config
-
-/.sln/*.user
+.sln/*.suo
+.sln/*.user
