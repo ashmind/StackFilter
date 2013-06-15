@@ -29,20 +29,19 @@ ko.track(Model.notifications);
 ko.track(Model);
 
 var App = {
-    _lastUpdate:             new Date().addHours(-1),
-    _soFieldFilter:          '!5-2CV5.zdri*hFccadRi6*fBC48*S(u.vSmnlf',
-    
+    _soFieldFilter: '!5-2CV5.zdri*hFccadRi6*fBC48*S(u.vSmnlf',
+   
     applyFilter : function() {
         this._appliedFilter = Model.filter;
         window.clearTimeout(this._timeoutID);
         Model.filter.changed = false;
         Model.questions.removeAll();
-        this.requestUpdate(new Date().addHours(-1));
+        this.requestUpdate();
     },
 
-    requestUpdate: function(fromDate) {
+    requestUpdate: function() {
         var query = {
-            fromDate: fromDate || this._lastUpdate,
+            fromDate: new Date().addDays(-1),
             tags:     this._appliedFilter.tags.split(/[,;\s]+/),
             closed:   false,
             migrated: false,
@@ -59,8 +58,19 @@ var App = {
     },
 
     processUpdate : function(questionsJson) {
-        var spliceArgs = [0, 0];
         var cleaner = $('<div>');
+        var getExceprt = function(bodyHtml) {
+            var bodyText = cleaner.html(bodyHtml).text();
+            return bodyText.match(/^\s*(\S*(?:\s+\S+){0,39})/)[1] + '…';
+        };
+
+        var questionMap = {};
+        for (var i = 0; i < Model.questions.length; i++) {
+            Model.questions[i].updated = false;
+            questionMap[Model.questions[i].id] = Model.questions[i];
+        }
+
+        var spliceArgs = [0, 0];
         for (var i = 0; i < questionsJson.length; i++) {
             var q = questionsJson[i];
             if (parseInt(q.owner.reputation) < this._appliedFilter.minReputation)
@@ -68,13 +78,21 @@ var App = {
             
             if (parseInt(q.answer_count) > this._appliedFilter.maxAnswers)
                 continue;
-
-            var bodyText = cleaner.html(q.body).text();
-
-            var question = {
+            
+            var question = questionMap[q.question_id];
+            var isNew = false;
+            if (!question) {
+                // new question
+                isNew = true;
+                question = {};
+                questionMap[q.question_id] = question;
+            }
+            
+            $.extend(question, {
+                id:      q.question_id,
                 url:     q.link,
                 title:   q.title,
-                excerpt: bodyText.match(/^\s*(\S*(?:\s+\S+){0,39})/)[1] + '…',
+                excerpt: getExceprt(q.body),
                 tags:    q.tags,
                 score:   q.score,
                 answers: q.answer_count,
@@ -84,15 +102,24 @@ var App = {
                     name:       q.owner.display_name,
                     imageUrl:   q.owner.profile_image,
                     reputation: q.owner.reputation
-                }
-            };
+                },
+                
+                updated: true
+            });
+
+            if (!isNew)
+                continue;
+
+            ko.track(question);
             spliceArgs.push(question);
             
-            if (i === 0)
-                this.notifications.show(question);
+            this.notifications.show(question);
         }
-
+        
+        cleaner.remove();
         Model.questions.splice.apply(Model.questions, spliceArgs);
+        // remove all questions that were not found during this update
+        Model.questions.remove(function(q) { return !q.updated; });
     },
        
     start : function() {
