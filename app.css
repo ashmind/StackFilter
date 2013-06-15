@@ -45,12 +45,16 @@ a:hover {
 
 .container {
     margin: auto;
-    display: table;
-    border-spacing: 15px;
+    width: 800px;
 }
 
-.filter {
-    display: table-row;
+.filter, .notifications {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.notifications {
+    margin-top: 0.3em;
 }
 
 input[type=text], input[type=number] {
@@ -58,7 +62,8 @@ input[type=text], input[type=number] {
 }
 
 .questions {
-    
+    display: table;
+    border-spacing: 15px;
 }
 
 .question {
@@ -78,10 +83,6 @@ input[type=text], input[type=number] {
 
 .stats * {
     text-align: center;
-}
-
-.details {
-    max-width: 650px;
 }
 
 .excerpt {

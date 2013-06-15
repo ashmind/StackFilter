@@ -15,18 +15,20 @@
     <div class="container">
       <div id="filter" class="filter" data-bind="with: filter">
         <p>
-          Show me questions tagged <input data-bind="value: tags" type="text"> with a score of at least
-          <input data-bind="value: minScore" type="number">. Author's reputation must be at least
-          <input data-bind="value: minReputation" type="number">.
+          Show me questions tagged <input data-bind="value: tags" type="text"> with a score of at least <input data-bind="value: minScore" type="number">.
         </p>
         
+        <p>
+          Author's reputation must be at least <input data-bind="value: minReputation" type="number">.
+        </p>
+
         <p>
           Question must have no more than <input data-bind="value: maxAnswers" type="number"> answer<span data-bind="text: maxAnswers != 1 ? 's' : ''"></span> and no approved answer.
           <button data-bind="visible: changed, click: App.applyFilter">Change</button>
         </p>
       </div>
       <!-- ko with: notifications -->
-      <div data-bind="visible: possible">
+      <div class="notifications" data-bind="visible: possible">
         <input type="checkbox" data-bind="checked: enabled" /> Notify me on new questions.
       </div>
       <!-- /ko -->
