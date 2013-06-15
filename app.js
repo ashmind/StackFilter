@@ -221,6 +221,9 @@ App.notifications = {
     },
 
     show: function(question) {
+        if (!Model.notifications.enabled)
+            return;
+
         var notification = new Notification(question.title, {
             body: question.excerpt,
             icon: question.imageUrl
