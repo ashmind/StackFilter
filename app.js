@@ -64,24 +64,29 @@ var StackOverflow = {
         });
     },
 
-    questions : function(query, complete) {
-        var request = {
-            site:   'stackoverflow',
-            key:    this._key,
-            access_token: this._accessToken,
-            min:    (query.score || {}).min,
-            order:  query.order,
-            sort:   query.sort,
-            filter: query.filter
-        };
-        if (query.fromDate)
-            request.fromdate = query.fromDate.toUnixTime();
-        if (query.tags)
-            request.tagged = query.tags.join(';');
+    search : {
+        advanced: function(query, complete) {
+            var request = {
+                site:     'stackoverflow',
+                key:      this._key,
+                access_token: this._accessToken,
+                closed:   query.closed,
+                migrated: query.migrated,
+                min:      (query.score || {}).min,
+                order:    query.order,
+                sort:     query.sort,
+                filter:   query.filter
+            };
+            if (query.fromDate)
+                request.fromdate = query.fromDate.toUnixTime();
+            if (query.tags)
+                request.tagged = query.tags.join(';');
 
-        $.get(this._apiUrl + '/questions', request, complete);
-    }     
+            $.get(this._apiUrl + '/search/advanced', request, complete);
+        }
+    }
 };
+StackOverflow.search.advanced = StackOverflow.search.advanced.bind(StackOverflow);
 
 var App = {
     _lastUpdate:             new Date().addHours(-1),
@@ -98,13 +103,15 @@ var App = {
     requestUpdate: function(fromDate) {
         var query = {
             fromDate: fromDate || this._lastUpdate,
-            filter:   this._soFieldFilter,
+            tags:     this._appliedFilter.tags.split(/[,;\s]+/),
+            closed:   false,
+            migrated: false,
             score:    { min: this._appliedFilter.minScore },
+            filter:   this._soFieldFilter,
             sort:    'creation',
-            order:   'desc',
-            tags:    this._appliedFilter.tags.split(/[,;\s]+/)
+            order:   'desc'
         };
-        StackOverflow.questions(query, function(result) {
+        StackOverflow.search.advanced(query, function(result) {
             this._lastUpdate = new Date();
             this.processUpdate(result.items);
             this._timeoutID = setTimeout(App.requestUpdate, 120000);
@@ -165,6 +172,8 @@ var App = {
         }.bind(this));
     }
 };
+App.applyFilter = App.applyFilter.bind(App);
+
 App.notifications = {
     _permission: undefined,
 
