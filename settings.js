@@ -1,6 +1,6 @@
 ﻿var settings = {
     StackOverflowAPI : {
-        clientId: 1655,
-        key:      'pDZGs9mGjjQ*mP0RG6ojYg(('
+        clientId: 1673,
+        key:      'nOXB0xIdm3cHZwh3uW0brg(('
     }
 };
