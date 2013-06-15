@@ -20,6 +20,7 @@ var Model = {
     },
     notifications : {
         possible: false,
+        problem:  '',
         enabled:  false
     },
     questions: []
@@ -145,8 +146,9 @@ App.notifications = {
     _permission: undefined,
 
     setup : function() {
-        if (Notification === undefined) {
+        if (window.Notification === undefined) {
             Model.notifications.possible = false;
+            Model.notifications.problem = 'not supported';
             return;
         }
 
@@ -163,6 +165,7 @@ App.notifications = {
         
         if (this._permission === 'denied') {
             Model.notifications.possible = false;
+            Model.notifications.problem = 'denied permission';
             return;
         }
         
@@ -186,6 +189,7 @@ App.notifications = {
             this._permission = permission;
             if (permission === 'denied') {
                 Model.notifications.possible = false;
+                Model.notifications.problem = 'denied permission';
                 return;
             }
 
@@ -201,8 +205,7 @@ App.notifications = {
             return;
 
         var notification = new Notification(question.title, {
-            body: question.excerpt,
-            icon: question.imageUrl
+            body: question.excerpt
         });
         notification.onshow = function() {
             window.setTimeout(function() {

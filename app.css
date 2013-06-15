@@ -22,7 +22,6 @@ h3 {
     margin: 0;
     padding: 0;
 
-    margin-bottom: 5px;
     font-family: Trebuchet MS, Liberation Sans, DejaVu Sans, sans-serif;
     font-weight: bold;
     font-size: 110%;
@@ -31,6 +30,10 @@ h3 {
 p {
     margin-top: 0.3em;
     margin-bottom: 0;
+}
+
+p * {
+    vertical-align: middle;
 }
 
 a {
@@ -48,9 +51,10 @@ a:hover {
     width: 800px;
 }
 
-.filter, .notifications {
-    padding-left: 15px;
-    padding-right: 15px;
+.settings {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eaeaea;
 }
 
 .notifications {
@@ -61,9 +65,12 @@ input[type=text], input[type=number] {
     width: 5em;
 }
 
+input:disabled + label {
+    color: #888;
+}
+
 .questions {
     display: table;
-    border-spacing: 15px;
 }
 
 .question {
@@ -73,20 +80,53 @@ input[type=text], input[type=number] {
 .question > * {
     display: table-cell;
     vertical-align: top;
+    border-bottom: 1px solid #eaeaea;
+    padding-top: 15px;
+    padding-bottom: 15px;
 }
 
 .stats {
-    background-color: #eee;
     color: #888;
-    padding: 6px;
 }
 
 .stats * {
     text-align: center;
 }
 
+.score-value {
+    font-size: 160%;
+    background-color: #eee;
+    padding: 6px;
+}
+
+.answers {
+    background-color: #eee;
+    padding: 6px;
+    padding-top: 0;
+}
+
+.views {
+    padding: 6px;
+    padding-top: 3px;
+}
+
+.answers, .views {
+    white-space: nowrap;
+}
+
+.answers > *, .views > * {
+    display: inline-block;
+}
+
+.details-container {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
 .excerpt {
     font-size: 90%;
+    padding-top:    5px;
+    padding-bottom: 5px;
 }
 
 .tags {
@@ -107,23 +147,6 @@ input[type=text], input[type=number] {
     border-right: 1px solid #b3cee1;
 }
 
-.score-value {
-    font-size: 24px;
-}
-
-.answers-value {
-    font-size: 140%;
-}
-
-.views {
-    color: #999;
-    white-space: nowrap;
-}
-
-.views * {
-    display: inline;
-}
-
 .posted {
     background-color: #eee;
     padding: 6px;
@@ -132,11 +155,16 @@ input[type=text], input[type=number] {
 .posted-date {
     white-space: nowrap;
     font-size: 90%;
+    color: #888;
 }
 
 .author {
     white-space: nowrap;
     margin-top: 4px;
+}
+
+.author > * {
+    vertical-align: middle;
 }
 
 .author-image {

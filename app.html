@@ -14,33 +14,26 @@
   </head>
   <body>
     <div class="container">
-      <div id="filter" class="filter" data-bind="with: filter">
-        <p>
-          Show me questions tagged <input data-bind="value: tags" type="text"> with a score of at least <input data-bind="value: minScore" type="number">.
-        </p>
-        
-        <p>
-          Author's reputation must be at least <input data-bind="value: minReputation" type="number">.
-        </p>
-
-        <p>
-          Question must have no more than <input data-bind="value: maxAnswers" type="number"> answer<span data-bind="text: maxAnswers != 1 ? 's' : ''"></span> and no approved answer.
-          <button data-bind="visible: changed, click: App.applyFilter">Change</button>
-        </p>
+      <!-- Settings -->
+      <div class="settings">
+        <div id="filter" class="filter" data-bind="with: filter">
+          <p>Show me questions tagged <input data-bind="value: tags" type="text"> with a score of at least <input data-bind="value: minScore" type="number">.</p>
+          <p>Author's reputation must be at least <input data-bind="value: minReputation" type="number">.</p>
+          <p>Questions must have no more than <input data-bind="value: maxAnswers" type="number"> answer<span data-bind="text: maxAnswers != 1 ? 's' : ''"></span> 
+                                             and no approved answer.</p>
+          <button data-bind="visible: changed, click: App.applyFilter">Apply</button>
+        </div>
+        <div class="notifications" data-bind="with: notifications">
+          <input id="notify" type="checkbox" data-bind="checked: enabled, enable: possible" /><label for="notify">Show desktop notification for new questions<span data-bind="text: !possible ? ' (' + problem + ')' : ''"></span>.</label>
+        </div>
       </div>
-      <!-- ko with: notifications -->
-      <div class="notifications" data-bind="visible: possible">
-        <input type="checkbox" data-bind="checked: enabled" /> Notify me on new questions.
-      </div>
-      <!-- /ko -->
+      
+      <!-- Questions -->
       <div class="questions" data-bind="foreach: questions">
         <div class="question">
           <div class="stats-container">
             <div class="stats">
-              <div class="score">
-                <div class="score-value" data-bind="text: score"></div>
-                <div>votes</div>
-              </div>
+              <div class="score-value" data-bind="text: score"></div>
               <div class="answers">
                 <div class="answers-value" data-bind="text: answers"></div>
                 <div>answers</div>
@@ -56,7 +49,7 @@
               <h3>
                 <a data-bind="html: title, attr: { href: url }"></a>
               </h3>
-              <div class="excerpt" data-bind="html: excerpt"></div>
+              <div class="excerpt" data-bind="text: excerpt"></div>
               <ul class="tags" data-bind="foreach: tags">
                 <li class="tag" data-bind="text: $data"></li>
               </ul>
