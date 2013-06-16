@@ -1,18 +1,35 @@
 ﻿var StackOverflow = {
+    _tokenCacheKey: 'StackOverflow.accessToken',
     _apiUrl: 'https://api.stackexchange.com/2.1',
-
-    authenticate: function(clientId, key, success) {
+    
+    setup : function(key) {
         this._key = key;
+        var cachedToken = localStorage.getItem(this._tokenCacheKey);
+        if (cachedToken) {
+            this._accessToken = cachedToken;
+            this.authenticated = true;
+        }
+    },
+
+    authenticate: function(clientId, options) {
+        var success = function(result) {
+            this._accessToken = result.accessToken;
+            this.authenticated = true;
+            if (options.cache)
+                localStorage.setItem(this._tokenCacheKey, result.accessToken);
+
+            if (options.success)
+                options.success();
+        }.bind(this);
+        
         SE.init({
             clientId: clientId,
             key: this._key,
             channelUrl: window.location.href.replace('app.html', 'blank.html'),
             complete: function() {
                 SE.authenticate({
-                    success : function(result) {
-                        this._accessToken = result.accessToken;
-                        success();
-                    }.bind(this),
+                    scope: options.cache ? ['no_expiry'] : [],
+                    success: success,
                     error: function(e) {
                         alert('Failed to authenticate: ' + e.errorName + ", " + e.errorMessage + ".");
                     }
@@ -20,7 +37,7 @@
             }.bind(this)
         });
     },
-
+    
     search : {
         advanced: function(query, complete) {
             var request = {

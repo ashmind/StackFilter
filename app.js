@@ -10,6 +10,7 @@ ko.bindingHandlers.datetime = {
 };
 
 var Model = {
+    authenticated : false,
     filter: {
         tags: 'c#',
         minScore: 0,
@@ -124,6 +125,16 @@ var App = {
         // remove all questions that were not found during this update
         Model.questions.remove(function(q) { return !q.updated; });
     },
+    
+    login : function() {
+        StackOverflow.authenticate(settings.StackOverflowAPI.clientId, {
+            cache:   true,
+            success: function() {
+                Model.authenticated = true;
+                this.requestUpdate();
+            }.bind(this)
+        });
+    },
        
     start : function() {
         this._appliedFilter = Model.filter;
@@ -135,14 +146,18 @@ var App = {
                     Model.filter.changed = true;
             }.bind(this));
         }
+
+        StackOverflow.setup(settings.StackOverflowAPI.key);
+        if (StackOverflow.authenticated) {
+            Model.authenticated = true;
+            this.requestUpdate();
+        }
         
         this.notifications.setup();
-        StackOverflow.authenticate(settings.StackOverflowAPI.clientId, settings.StackOverflowAPI.key, function() {
-            this.requestUpdate();
-        }.bind(this));
     }
 };
 App.applyFilter = App.applyFilter.bind(App);
+App.login = App.login.bind(App);
 
 App.notifications = {
     _permission: undefined,
