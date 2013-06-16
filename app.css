@@ -206,3 +206,7 @@ input:disabled + label {
 .author-details {
     display: inline-block;
 }
+
+.author-name {
+    font-size: 90%;
+}
