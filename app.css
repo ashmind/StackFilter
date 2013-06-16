@@ -26,6 +26,7 @@ input {
     font-family: 'Open Sans', 'Segoe UI', 'Roboto', sans-serif;
     font-weight: normal;
     margin-bottom: 0;
+    padding-bottom: 5px;
 }
 
 .title::before {
@@ -45,8 +46,11 @@ h3 {
 }
 
 p {
+    margin: 0;
+}
+
+p + p {
     margin-top: 0.3em;
-    margin-bottom: 0;
 }
 
 p * {
