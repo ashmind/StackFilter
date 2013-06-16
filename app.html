@@ -3,10 +3,10 @@
   <head>
     <title>Stack Filter</title>
     <link rel="stylesheet" href="app.css" />
-    <script type="text/javascript" src="external/jquery-2.0.1.min.js"></script>
-    <script type="text/javascript" src="external/knockout-2.2.1.js"></script>
-    <script type="text/javascript" src="external/knockout-es5.min.js"></script>
-    <script type="text/javascript" src="external/jquery.timeago.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-2.0.0.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/knockout/2.2.1/knockout-min.js"></script>
+    <script type="text/javascript" src="external/knockout-es5.min.js"></script> <!-- no CDN? :( -->
+    <script type="text/javascript" src="external/jquery.timeago.js"></script>   <!-- no CDN (it is customised anyway) -->
     <script type="text/javascript" src="https://api.stackexchange.com/js/2.0/all.js"></script>
     <script type="text/javascript" src="internal/date.js"></script>
     <script type="text/javascript" src="internal/stackoverflow.js"></script>
@@ -23,7 +23,7 @@
           <p>Show me questions tagged <input data-bind="value: tags" type="text"> with a score of at least <input data-bind="value: minScore" type="number">.</p>
           <p>Author's reputation must be at least <input data-bind="value: minReputation" type="number">. If it is not, question score must be at least <input data-bind="value: lowReputationMinScore" type="number">.</p>
           <p>Questions must have no more than <input data-bind="value: maxAnswers" type="number"> answer<span data-bind="text: maxAnswers != 1 ? 's' : ''"></span> 
-                                              and no approved answer.</p>
+             and no approved answer.</p>
           <button data-bind="visible: changed, click: App.applyFilter">Apply</button>
         </div>
         <div class="notifications" data-bind="with: notifications">
