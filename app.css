@@ -59,6 +59,10 @@ a {
     cursor: pointer;
 }
 
+a:visited {
+    color: #4a6b82;
+}
+
 a:hover {
     text-decoration: underline;
 }
