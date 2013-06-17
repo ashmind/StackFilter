@@ -147,6 +147,9 @@ var App = {
         this._appliedFilter = $.extend({}, Model.filter);
         Model.filter.changed = false;
         for (var key in Model.filter) {
+            if (key === 'changed')
+                continue;
+
             var keyFixed = key;
             ko.getObservable(Model.filter, key).subscribe(function(newValue) {
                 if (this._appliedFilter[keyFixed] !== newValue)
