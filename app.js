@@ -35,7 +35,8 @@ var App = {
     _soFieldFilter: '!5-2CV5.zdri*hFccadRi6*fBC48*S(u.vSmnlf',
    
     applyFilter : function() {
-        this._appliedFilter = Model.filter;
+        this._appliedFilter = $.extend({}, Model.filter);
+        this.storage.saveUserSettings();
         window.clearTimeout(this._timeoutID);
         Model.filter.changed = false;
         Model.questions.removeAll();
@@ -55,10 +56,13 @@ var App = {
             pageSize: 100
         };
         StackOverflow.search.advanced(query, function(result) {
-            this._lastUpdate = new Date();
             this.processUpdate(result.items);
-            this._timeoutID = setTimeout(App.requestUpdate.bind(App), 120000);
+            this.scheduleNextUpdate();
         }.bind(this));
+    },
+    
+    scheduleNextUpdate : function() {
+        this._timeoutID = setTimeout(App.requestUpdate.bind(App), settings.requestIntervalInMinutes * 60 * 1000);
     },
 
     processUpdate : function(questionsJson) {
@@ -124,6 +128,8 @@ var App = {
         Model.questions.splice.apply(Model.questions, spliceArgs);
         // remove all questions that were not found during this update
         Model.questions.remove(function(q) { return !q.updated; });
+
+        this.storage.saveState();
     },
     
     login : function() {
@@ -137,7 +143,8 @@ var App = {
     },
        
     start : function() {
-        this._appliedFilter = Model.filter;
+        this.storage.loadUserSettings();
+        this._appliedFilter = $.extend({}, Model.filter);
         Model.filter.changed = false;
         for (var key in Model.filter) {
             var keyFixed = key;
@@ -150,7 +157,9 @@ var App = {
         StackOverflow.setup(settings.StackOverflowAPI.key);
         if (StackOverflow.authenticated) {
             Model.authenticated = true;
-            this.requestUpdate();
+            var stateResult = this.storage.loadState();
+            if (stateResult.updateRequired)
+                this.requestUpdate();
         }
         
         this.notifications.setup();
@@ -159,13 +168,55 @@ var App = {
 App.applyFilter = App.applyFilter.bind(App);
 App.login = App.login.bind(App);
 
+App.storage = {
+    loadUserSettings : function() {
+        var userSettingsJson = localStorage.getItem("App.userSettings");
+        if (!userSettingsJson)
+            return;
+
+        var userSettings = JSON.parse(userSettingsJson);
+        $.extend(Model.filter, userSettings.filter);
+    },
+    
+    loadState : function() {
+        var stateJson = sessionStorage.getItem('App.state');
+        if (!stateJson)
+            return { updateRequired: true };
+        
+        var state = JSON.parse(stateJson);
+        var spliceArgs = [0, 0];
+        for (var i = 0; i < state.questions.length; i++) {
+            var question = state.questions[i];
+            question.posted = new Date(question.posted);
+            ko.track(question);
+            spliceArgs.push(question);
+        }
+        Model.questions.splice.apply(Model.questions, spliceArgs);
+
+        var updateRequiredAt = new Date().addMinutes(-settings.requestIntervalInMinutes);
+        return { updateRequired: new Date(state.saved) < updateRequiredAt };
+    },
+    
+    saveUserSettings : function() {
+        var userSettings = { filter: Model.filter };
+        var userSettingsJson = JSON.stringify(userSettings);
+        localStorage.setItem('App.userSettings', userSettingsJson);
+    },
+    
+    saveState : function() {
+        var state = { questions: Model.questions, saved: new Date().toISOString() };
+        var stateJson = JSON.stringify(state);
+        sessionStorage.setItem('App.state', stateJson);
+    }
+};
+
 App.notifications = {
     _permission: undefined,
 
     setup : function() {
         if (window.Notification === undefined) {
             Model.notifications.possible = false;
-            Model.notifications.problem = 'not supported';
+            Model.notifications.problem = 'unsupported by browser';
             return;
         }
 
@@ -191,7 +242,6 @@ App.notifications = {
             return;
         
         ko.getObservable(Model.notifications, 'enabled').subscribe(function(newValue) {
-            console.log('Enabled changed!');
             if (newValue)
                 this.enable();
         }.bind(this));
