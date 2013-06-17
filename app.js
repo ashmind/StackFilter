@@ -161,8 +161,12 @@ var App = {
         if (StackOverflow.authenticated) {
             Model.authenticated = true;
             var stateResult = this.storage.loadState();
-            if (stateResult.updateRequired)
+            if (stateResult.updateRequired) {
                 this.requestUpdate();
+            }
+            else {
+                this.scheduleNextUpdate();
+            }
         }
         
         this.notifications.setup();
@@ -194,7 +198,15 @@ App.storage = {
             ko.track(question);
             spliceArgs.push(question);
         }
-        Model.questions.splice.apply(Model.questions, spliceArgs);
+        
+        try {
+            Model.questions.splice.apply(Model.questions, spliceArgs);
+        }
+        catch(ex) {
+            // state is corrupted
+            sessionStorage.removeItem('App.state');
+            window.location.reload();
+        }
 
         var updateRequiredAt = new Date().addMinutes(-settings.requestIntervalInMinutes);
         return { updateRequired: new Date(state.saved) < updateRequiredAt };
