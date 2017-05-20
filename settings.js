@@ -1,8 +1,7 @@
-﻿// localhost only, overriden in deployment
-var settings = {
+﻿var settings = {
     StackOverflowAPI : {
         clientId: 1673,
-        key:      'nOXB0xIdm3cHZwh3uW0brg(('
+        key:      'oog7dyfW6cq4jkkcfXmD2Q(('
     },
     
     requestIntervalInMinutes : 1.5
